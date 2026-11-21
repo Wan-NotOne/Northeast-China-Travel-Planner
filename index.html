@@ -10,6 +10,14 @@
 const key='ne-trip-v1',dates=Array.from({length:9},(_,i)=>{const d=new Date(Date.UTC(2027,1,22+i));return d.toISOString().slice(0,10)});
 const initial={notes:[],stays:[],expenses:[],rooms:[{name:'Family Room 1',guests:['Eu','Siew Li','Yu Hung']},{name:'Family Room 2',guests:['Lily','Feng Yuen','Feng Jie']},{name:'King Size Bed 1',guests:['Kam Weng','Siew Ling']},{name:'Double Bed 1',guests:['Zi Ying','Jia Wei']},{name:'Double Bed 2',guests:['Zi Xuan','Siew Cheng']},{name:'Double Bed 3',guests:['Ah Leek','Jia Yee']},{name:'Double Bed 4',guests:['Sheng','Boon Hock']}],attractions:[['哈尔滨','圣索菲亚教堂'],['哈尔滨','中华巴洛克历史文化街区'],['哈尔滨','中央大街'],['哈尔滨','冰雪大世界（如开放）'],['哈尔滨','哈尔滨极地公园（备用）'],['漠河','北极村'],['漠河','北红村'],['漠河','龙江第一湾'],['漠河','白桦林'],['漠河','最北邮局']].map(([city,name])=>({city,name,status:'待规划',access:'待核实'})),checks:['国际机票：已购买（不需重复预订）','确认漠河交通及18人团体座位','确认老人及两辆折叠轮椅接驳安排','确认冰雪大世界实际开放日期','核实漠河景区冬季路况与开放情况','预订酒店：待确定地点及房型'].map((text,i)=>({text,done:i===0}))};
 let data;try{data={...structuredClone(initial),...JSON.parse(localStorage.getItem(key)||'{}')}}catch{data=structuredClone(initial)}
+// Migrate existing browser data from the previous Harbin–Yichun–Heihe route without deleting personal records.
+if(!data.routeVersion || data.routeVersion!=='plan-a-mohe-2027'){
+ data.attractions=structuredClone(initial.attractions);
+ data.checks=structuredClone(initial.checks);
+ data.rooms=structuredClone(initial.rooms);
+ data.routeVersion='plan-a-mohe-2027';
+ try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}
+}
 if(!Array.isArray(data.rooms))data.rooms=structuredClone(initial.rooms); const save=()=>localStorage.setItem(key,JSON.stringify(data)),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tabs={dashboard:'概览',itinerary:'每日行程',attractions:'景点',rooms:'房间分配',stays:'住宿',budget:'预算',backup:'备选方案',data:'数据备份'};let current='dashboard';
 function show(t){current=t;document.getElementById('nav').innerHTML=Object.entries(tabs).map(([k,v])=>`<button class="${k===t?'active':''}" onclick="show('${k}')">${v}</button>`).join('');render()}
